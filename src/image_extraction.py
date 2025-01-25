@@ -3,9 +3,8 @@ import base64
 
 
 class ImageExtractor:
-    def __init__(self, api_key, source):
+    def __init__(self, api_key):
         self.api_key = api_key
-        self.source = source
 
     def extract_text_from_image(self, image_path: str) -> str:
         image_base64 = _image_to_base64(image_path)
