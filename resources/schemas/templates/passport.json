@@ -4,7 +4,7 @@
   "title": "PassportModel",
   "type": "object",
   "properties": {
-    "name": {
+    "first-name": {
       "type": "string",
       "description": "First name of the person"
     },
