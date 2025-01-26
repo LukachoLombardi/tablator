@@ -1,3 +1,5 @@
 .idea/
 latest.log
 credentials.txt
+/resources/schemas/generated/__pycache__
+*.pyc

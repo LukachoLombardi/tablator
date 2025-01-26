@@ -1,7 +1,14 @@
 import logging
+import os
+
+from pydantic import BaseModel
+import schemas
 
 logger: logging.Logger = logging.getLogger(__name__)
-logging.basicConfig(filename="../latest.log", level=logging.INFO)
+logging.basicConfig(filename="../latest.log",
+                    level=logging.INFO,
+                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    filemode='w')
 credentials_file = open("../credentials.txt", "rt+")
 openapi_key: str
 
@@ -50,12 +57,38 @@ def setup_credentials() -> str:
         return prompt_credentials()
 
 
+def nav_process_image_data_choose_schema() -> type(BaseModel):
+    classes = schemas.get_model_collection()
+    str_builder: str = ""
+    str_builder += "Available schemas:\n"
+    for i, cls in enumerate(classes):
+        str_builder += f"{i+1} - {cls.__name__}"
+    str_builder += "\nPlease select a schema: "
+    choice = int(user_input(str_builder))-1
+    try:
+        return classes[choice]
+    except Exception as e:
+        logger.error(f"An error occurred selecting schema: {e}")
+        nav_process_image_data_choose_schema()
+
+
+def nav_get_valid_directory(prompt: str, default: str = "") -> str:
+    directory = user_input(prompt)
+    if directory == "" and default != "":
+        return default
+    if not os.path.isdir(directory):
+        nav_get_valid_directory("Invalid Path!\n"+prompt)
+    return directory
+
+
 def nav_process_image_data():
-    choice = user_input("Please input source directory. Leaving empty will assume default (.../tablator/inputs): ")
-    if choice == "":
-        choice = "../inputs"
-    input_dir = choice
+    input_dir = nav_get_valid_directory("Please input source directory. Leaving empty will assume default (.../tablator/inputs): ", "../inputs")
     logger.info(f"input directory: {input_dir}")
+
+    output_dir = nav_get_valid_directory("Please input output directory. Leaving empty will assume default (.../tablator/outputs): ", "../outputs")
+    logger.info(f"output directory: {output_dir}")
+
+    schema: type(BaseModel) = nav_process_image_data_choose_schema()
 
 
 def nav_main():
@@ -79,6 +112,7 @@ def main():
     print_welcome_message()
     openai_key = setup_credentials()
     nav_main()
+
 
 if __name__ == '__main__':
     main()

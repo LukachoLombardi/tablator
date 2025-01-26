@@ -1,0 +1,25 @@
+{
+  "$id": "passport.json",
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "PassportModel",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "First name of the person"
+    },
+    "surname": {
+      "type": "string",
+      "description": "Last name of the person"
+    },
+    "birth_date": {
+      "type": "string",
+      "description": "Date of birth of the person"
+    },
+    "passport_number": {
+      "type": "string",
+      "description": "Passport number of the person"
+    }
+  },
+  "required": ["name", "surname", "birth_date", "passport_number"]
+}
