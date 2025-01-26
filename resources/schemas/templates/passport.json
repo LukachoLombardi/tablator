@@ -12,14 +12,38 @@
       "type": "string",
       "description": "Last name of the person"
     },
+    "sex": {
+      "type": "string",
+      "description": "sex of the person"
+    },
+    "size": {
+      "type": "string",
+      "description": "size of the person"
+    },
     "birth_date": {
       "type": "string",
       "description": "Date of birth of the person"
+    },
+    "issuing_country": {
+      "type": "string",
+      "description": "country issuing the identity document"
+    },
+    "issuing_date": {
+      "type": "string",
+      "description": "Date of issue of the identity document"
+    },
+    "validity": {
+      "type": "string",
+      "description": "validity date of the document"
+    },
+    "nationality": {
+      "type": "string",
+      "description": "nationality of the person"
     },
     "passport_number": {
       "type": "string",
       "description": "Passport number of the person"
     }
   },
-  "required": ["name", "surname", "birth_date", "passport_number"]
+  "required": []
 }

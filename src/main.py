@@ -2,39 +2,26 @@ import logging
 import os
 import sys
 from pathlib import Path
-from util import get_running_path, sanitize_str_path
+from image_tabling import ImageDataTabler
+from util import get_running_path, sanitize_str_path, user_input, print_welcome_message
 from pydantic import BaseModel
 import schemas
-from image_extraction import ImageExtractor, ImageData
+from image_extraction import ImageDataExtractor, ImageData
+from openai import AuthenticationError
 
 logger: logging.Logger = logging.getLogger(__name__)
+logger_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename=sanitize_str_path(f"{get_running_path(sys.argv[0])}/../latest.log"),
                     level=logging.INFO,
-                    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+                    format=logger_format,
                     filemode='w')
+console_handler = logging.StreamHandler(sys.stdout)
+console_handler.setLevel(logging.INFO)
+console_handler.setFormatter(logging.Formatter(logger_format))
+logging.root.addHandler(console_handler)
+
 credentials_file_path = sanitize_str_path(f"{get_running_path(sys.argv[0])}/../credentials.txt")
 openai_key: str = ""
-
-
-def print_welcome_message():
-    print("""
-  _        _     _       _             
- | |      | |   | |     | |            
- | |_ __ _| |__ | | __ _| |_ ___  _ __ 
- | __/ _` | '_ \| |/ _` | __/ _ \| '__|
- | || (_| | |_) | | (_| | || (_) | |   
-  \__\__,_|_.__/|_|\__,_|\__\___/|_|   
-                                      
-Lukas Wößner (c) - 2025                                       
-    """)
-
-
-def user_input(prompt: str):
-    logger.debug(f"prompting user: {prompt}")
-    print("\033[H\033[J", end="")
-    print_welcome_message()
-    input_str = input(prompt)
-    return input_str
 
 
 def prompt_credentials() -> str:
@@ -75,7 +62,7 @@ def nav_process_image_data_choose_schema() -> type(BaseModel):
         return classes[choice]
     except Exception as e:
         logger.error(f"An error occurred selecting schema: {e}")
-        nav_process_image_data_choose_schema()
+        return nav_process_image_data_choose_schema()
 
 
 def nav_get_valid_directory(prompt: str, default: str = "") -> str:
@@ -83,11 +70,20 @@ def nav_get_valid_directory(prompt: str, default: str = "") -> str:
     if directory == "" and default != "":
         return default
     if not os.path.isdir(directory):
-        nav_get_valid_directory("Invalid Path!\n" + prompt, default)
-    return directory
+        return nav_get_valid_directory("Invalid Path!\n" + prompt, default)
+    else:
+        return directory
 
 
-def nav_process_image_data():
+def get_last_output_index(output_dir: str, basename: str) -> int:
+    files = [f for f in os.listdir(output_dir) if os.path.isfile(os.path.join(output_dir, f)) and f.startswith(basename)]
+    if len(files) == 0:
+        return 0
+    return max([int(f.split("_")[1].split(".")[0]) for f in files])
+
+
+def nav_process_image_data() -> bool:
+    success: bool = False
     input_dir = nav_get_valid_directory(
         "Please input source directory. Leaving empty will assume default (.../tablator/inputs): ",
         sanitize_str_path(f"{get_running_path(sys.argv[0])}/../inputs"))
@@ -103,21 +99,32 @@ def nav_process_image_data():
 
     logger.info("processing image data")
 
-    extractor = ImageExtractor(api_key=openai_key, schema=schema)
-    result = extractor.extract_text_from_image(Path(input_dir + "/test.jpg").resolve().as_posix())
+    extractor = ImageDataExtractor(api_key=openai_key, schema=schema)
+    tabler = ImageDataTabler(extractor)
+    try:
+        tabler.batch_process_images_from_folder(sanitize_str_path(input_dir))
+        success = True
+    except AuthenticationError:
+        logger.error("There was a problem with your API key. Please make sure your credentials are valid.")
+    except Exception as e:
+        logger.error(f"An unknown error occurred processing image data: {e}")
+    finally:
+        tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')+1}.xlsx"))
+        return success
 
-    for key, value in result.data.model_dump().items():
-        print(f"{key}: {value}")
-    exit()
+
+def nav_help():
+    os.startfile(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../README.md"))
 
 
-def nav_main():
-    choice = user_input("""Welcome. Please select an option:
+def nav_main(prompt: str = """Welcome. Please select an option:
 1 - Process image data
 2 - Set api key
-3 - Exit
+3 - Help
+4 - Exit
     
-Input: """)
+Input: """):
+    choice = user_input(prompt)
     if choice == "1":
         logger.info("navigating to process image data")
         nav_process_image_data()
@@ -126,16 +133,23 @@ Input: """)
         global openai_key
         openai_key = prompt_credentials()
     elif choice == "3":
+        logger.info("navigating to help")
+        nav_help()
+    elif choice == "4":
         logger.info("exiting on user request")
         exit()
     nav_main()
 
 
 def main():
-    print_welcome_message()
-    global openai_key
-    openai_key = setup_credentials()
-    nav_main()
+    try:
+        print_welcome_message()
+        global openai_key
+        openai_key = setup_credentials()
+        nav_main()
+    except Exception as e:
+        logger.fatal(f"An unprocessed error occurred, restarting application: {e}")
+        main()
 
 
 if __name__ == '__main__':
