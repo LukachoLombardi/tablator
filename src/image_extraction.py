@@ -28,7 +28,7 @@ class ImageExtractor:
     def extract_text_from_image(self, image_path: str) -> ImageData:
         image_base64 = _image_to_base64(image_path)
         logger.info(f"extracting text from image {image_path}")
-        unparsed_response = self.openai.chat.completions.create(
+        response = self.openai.beta.chat.completions.parse(
             model="gpt-4o-mini",
             messages=[
                 {
@@ -44,24 +44,11 @@ class ImageExtractor:
                         }
                     ]
                 },
-            ]
-        )
-        parsed_response = self.openai.beta.chat.completions.parse(
-            model="gpt-4o-mini",
-            messages=[
-                {
-                    "role": "system",
-                    "content": self.schema_prompt,
-                },
-                {
-                    "role": "user",
-                    "content": unparsed_response.choices[0].message.content,
-                },
             ],
             response_format=self.schema
         )
 
-        return ImageData(image_path=image_path, schema=self.schema, data=parsed_response.choices[0].message.parsed)
+        return ImageData(image_path=image_path, schema=self.schema, data=response.choices[0].message.parsed)
 
 
 def _image_to_base64(image_path: str) -> str:
