@@ -5,7 +5,7 @@ import pkgutil
 from pathlib import Path
 from types import ModuleType
 import sys
-
+from util import get_running_path, sanitize_str_path
 from datamodel_code_generator import InputFileType
 from pydantic import BaseModel
 import datamodel_code_generator
@@ -40,8 +40,8 @@ def _get_files_in_folder(folder_path: str) -> list[str]:
         return []
 
 
-def get_model_collection(folder_path: str = os.getcwd() + "/../resources/schemas/templates",
-                         output_path: str = os.getcwd() + "/../resources/schemas/generated") -> list[type(BaseModel)]:
+def get_model_collection(folder_path: str = sanitize_str_path(f"{get_running_path(sys.argv[0])}/../resources/schemas/templates"),
+                         output_path: str = sanitize_str_path(f"{get_running_path(sys.argv[0])}/../resources/schemas/generated")) -> list[type(BaseModel)]:
     logger.info(f"reading in available schemas from {folder_path}")
     files = _get_files_in_folder(folder_path)
     for file in files:
