@@ -117,17 +117,20 @@ def nav_help():
     os.startfile(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../README.md"))
 
 
-def nav_main(prompt: str = """Welcome. Please select an option:
+def nav_main():
+    prompt: str = """
+Welcome. Please select an option:
 1 - Process image data
 2 - Set api key
 3 - Help
 4 - Exit
-    
-Input: """):
-    choice = user_input(prompt)
+
+Input: """
+    choice = user_input(prompt, 3)
     if choice == "1":
         logger.info("navigating to process image data")
-        nav_process_image_data()
+        if nav_process_image_data():
+            logger.info("SUCCESS: image batch data processed")
     elif choice == "2":
         logger.info("navigating to set api key")
         global openai_key

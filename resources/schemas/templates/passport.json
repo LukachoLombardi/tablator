@@ -22,7 +22,7 @@
     },
     "birth_date": {
       "type": "string",
-      "description": "Date of birth of the person"
+      "description": "Date of birth of the person. In the format YYYY-MM-DD"
     },
     "issuing_country": {
       "type": "string",
@@ -30,11 +30,11 @@
     },
     "issuing_date": {
       "type": "string",
-      "description": "Date of issue of the identity document"
+      "description": "Date of issue of the identity document. In the format YYYY-MM-DD"
     },
     "validity": {
       "type": "string",
-      "description": "validity date of the document"
+      "description": "validity date of the document. In the format YYYY-MM-DD"
     },
     "nationality": {
       "type": "string",

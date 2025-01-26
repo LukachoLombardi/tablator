@@ -24,8 +24,8 @@ Lukas Wößner (c) - 2025
     """)
 
 
-def user_input(prompt: str):
-    time.sleep(1)
+def user_input(prompt: str, wait: int = 1):
+    time.sleep(wait)
     print("\033[H\033[J", end="")
     print_welcome_message()
     input_str = input(prompt)
