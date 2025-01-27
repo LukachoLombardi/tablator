@@ -113,7 +113,7 @@ def nav_process_image_data() -> bool:
     except Exception as e:
         logger.error(f"An unknown error occurred processing image data: {e}")
     finally:
-        tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')}.xlsx"))
+        tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')+1}.xlsx"))
     return success
 
 
