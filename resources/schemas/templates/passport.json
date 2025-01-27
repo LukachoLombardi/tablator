@@ -18,7 +18,7 @@
     },
     "size": {
       "type": "string",
-      "description": "size of the person"
+      "description": "size of the person. In format 1.80m, or 5.8ft"
     },
     "birth_date": {
       "type": "string",

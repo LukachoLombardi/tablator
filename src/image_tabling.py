@@ -15,7 +15,7 @@ class ImageDataTabler:
         self.image_extractor: image_extraction.ImageDataExtractor = image_extractor
         self.__image_data_model_type: type(BaseModel) = image_extractor.schema
 
-        class ModelWithPath(self.__image_data_model_type):
+        class ModelWithPath(image_extractor.schema):
             image_path: str
             error: str
         self.__model_type_with_meta = ModelWithPath
@@ -37,7 +37,7 @@ class ImageDataTabler:
 
     def batch_process_images_from_folder(self, folder_path: str):
         logger.info(f"processing images in folder {folder_path}")
-        image_paths = image_extraction.get_images_from_directory(folder_path)
+        image_paths = self.image_extractor.get_images_from_directory(folder_path)
         for image_path in image_paths:
             try:
                 self.process_image_to_table(image_path)

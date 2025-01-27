@@ -1,3 +1,4 @@
+import io
 import logging
 import os
 import time
@@ -28,25 +29,23 @@ class ImageDataExtractor:
         self.retry_secs: int = 10
         self.retry_attempts: int = 3
         self.sneaky_write_errors: bool = True
+        self.__compatible_image_formats: list[str] = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".tif", ".bmp", ".gif"]
         self.prompt: str = "extract all the matching data from the image. If unsure, leave blank."
 
         self.image_dimensions: list[int] = [1280, 720]
 
     @property
+    def compatible_image_formats(self) -> list[str]:
+        return self.__compatible_image_formats
+
+    @property
     def schema(self) -> type(BaseModel):
         return self.__schema
 
-    def _scale_image(self, image_path: str):
-        logger.info(f"scaling image {image_path}")
-        with Image.open(image_path) as img:
-            img.thumbnail(tuple[float, float](self.image_dimensions))
-            img.save(image_path)
-
     def _request_completion(self, image_path: str) -> BaseModel:
-        if not image_path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
-            raise ValueError("image must be a jpg, png, or webp file")
-        self._scale_image(image_path)
-        image_base64 = _image_to_base64(image_path)
+        if not image_path.lower().endswith(tuple(self.__compatible_image_formats)):
+            raise ValueError(f"image {image_path} type is not in {self.__compatible_image_formats}")
+        image_base64 = self._image_to_openai_compatible(image_path)
         logger.info(f"extracting data from image {image_path}")
         response = self._openai.beta.chat.completions.parse(
             model="gpt-4o-mini",
@@ -73,7 +72,8 @@ class ImageDataExtractor:
     def extract_data_from_image(self, image_path: str) -> ImageData:
         for _ in range(self.retry_attempts):
             try:
-                return ImageData(image_path=image_path, schema=self.__schema, data=self._request_completion(image_path), error=None)
+                return ImageData(image_path=image_path, schema=self.__schema, data=self._request_completion(image_path),
+                                 error=None)
             except RateLimitError as e:
                 logger.info(f"got rate limited, retrying in {self.retry_secs} seconds")
                 time.sleep(self.retry_secs)
@@ -83,7 +83,8 @@ class ImageDataExtractor:
             except Exception as e:
                 if self.sneaky_write_errors:
                     logger.error(f"An error occurred processing image, sneaky writing error {image_path}: {e}")
-                    return ImageData(image_path=image_path, schema=self.__schema, data=self.__schema.construct(), error=e)
+                    return ImageData(image_path=image_path, schema=self.__schema, data=self.__schema.construct(),
+                                     error=e)
                 else:
                     logger.error(f"An error occurred processing image, bubbling error {image_path}: {e}")
                     raise e
@@ -94,11 +95,14 @@ class ImageDataExtractor:
             return []
         return [self.extract_data_from_image(image_path) for image_path in image_paths]
 
+    def get_images_from_directory(self, directory: str) -> list[str]:
+        return [sanitize_str_path(os.path.join(directory, f)) for f in os.listdir(directory) if
+                os.path.isfile(os.path.join(directory, f)) and f.lower().endswith(tuple(self.__compatible_image_formats))]
 
-def get_images_from_directory(directory: str) -> list[str]:
-    return [sanitize_str_path(os.path.join(directory, f)) for f in os.listdir(directory) if os.path.isfile(os.path.join(directory, f)) and f.lower().endswith(('.jpg', '.jpeg', '.png', '.webp'))]
-
-
-def _image_to_base64(image_path: str) -> str:
-    with open(image_path, "rb") as image_file:
-        return base64.b64encode(image_file.read()).decode("utf-8")
+    def _image_to_openai_compatible(self, image_path: str) -> str:
+        with Image.open(image_path) as img:
+            with io.BytesIO() as buffer:
+                logger.info(f"adjusting image {image_path}. To dimensions: {self.image_dimensions}")
+                img.convert("RGB").save(buffer, format="JPEG")
+                img.thumbnail(tuple[float, float](self.image_dimensions))
+                return base64.b64encode(buffer.getvalue()).decode("utf-8")
