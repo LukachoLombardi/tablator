@@ -1,6 +1,6 @@
 .idea/
-latest.log
-credentials.txt
+*.log
+/credentials.txt
 /resources/schemas/generated/__pycache__
 *.pyc
 /resources/schemas/generated/
