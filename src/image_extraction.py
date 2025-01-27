@@ -2,7 +2,7 @@ import logging
 import os
 import time
 from PIL import Image
-from openai import OpenAI, RateLimitError
+from openai import OpenAI, RateLimitError, AuthenticationError
 import base64
 from pydantic import BaseModel
 from dataclasses import dataclass
@@ -17,6 +17,7 @@ logger: Logger = logging.getLogger(__name__)
 class ImageData:
     image_path: str
     schema: type(BaseModel)
+    error: Exception | None
     data: BaseModel
 
 
@@ -25,6 +26,8 @@ class ImageDataExtractor:
         self._openai: OpenAI = OpenAI(api_key=api_key)
         self.__schema: type(BaseModel) = schema
         self.retry_secs: int = 10
+        self.retry_attempts: int = 3
+        self.sneaky_write_errors: bool = True
         self.prompt: str = "extract all the matching data from the image. If unsure, leave blank."
 
         self.image_dimensions: list[int] = [1280, 720]
@@ -39,7 +42,7 @@ class ImageDataExtractor:
             img.thumbnail(tuple[float, float](self.image_dimensions))
             img.save(image_path)
 
-    def _request_completion(self, image_path: str) -> ImageData:
+    def _request_completion(self, image_path: str) -> BaseModel:
         if not image_path.lower().endswith(('.jpg', '.jpeg', '.png', '.webp')):
             raise ValueError("image must be a jpg, png, or webp file")
         self._scale_image(image_path)
@@ -65,15 +68,25 @@ class ImageDataExtractor:
             response_format=self.__schema
         )
         logger.info("got response")
-        return ImageData(image_path=image_path, schema=self.__schema, data=response.choices[0].message.parsed)
+        return response.choices[0].message.parsed
 
     def extract_data_from_image(self, image_path: str) -> ImageData:
-        while True:
+        for _ in range(self.retry_attempts):
             try:
-                return self._request_completion(image_path)
+                return ImageData(image_path=image_path, schema=self.__schema, data=self._request_completion(image_path), error=None)
             except RateLimitError as e:
                 logger.info(f"got rate limited, retrying in {self.retry_secs} seconds")
                 time.sleep(self.retry_secs)
+            except AuthenticationError as e:
+                logger.error(f"authentication error: {e}")
+                raise e
+            except Exception as e:
+                if self.sneaky_write_errors:
+                    logger.error(f"An error occurred processing image, sneaky writing error {image_path}: {e}")
+                    return ImageData(image_path=image_path, schema=self.__schema, data=self.__schema.construct(), error=e)
+                else:
+                    logger.error(f"An error occurred processing image, bubbling error {image_path}: {e}")
+                    raise e
 
     def batch_extract_data_from_images(self, image_paths: list[str]) -> list[ImageData]:
         if len(image_paths) == 0:

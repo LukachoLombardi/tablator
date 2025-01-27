@@ -113,7 +113,7 @@ def nav_process_image_data() -> bool:
     except Exception as e:
         logger.error(f"An unknown error occurred processing image data: {e}")
     finally:
-        tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')+1}.xlsx"))
+        tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')}.xlsx"))
     return success
 
 
@@ -134,7 +134,7 @@ Input: """
     if choice == "1":
         logger.info("navigating to process image data")
         if nav_process_image_data():
-            logger.info("SUCCESS: image batch data processed")
+            logger.info("FINISHED: image batch data processed")
     elif choice == "2":
         logger.info("navigating to set api key")
         global openai_key

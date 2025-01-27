@@ -1,4 +1,6 @@
 import os
+from multiprocessing.context import AuthenticationError
+
 from openpyxl.workbook import Workbook
 from pydantic import BaseModel
 import image_extraction
@@ -11,22 +13,25 @@ logger: logging.Logger = logging.getLogger(__name__)
 class ImageDataTabler:
     def __init__(self, image_extractor: image_extraction.ImageDataExtractor):
         self.image_extractor: image_extraction.ImageDataExtractor = image_extractor
-        self._image_data_model_type: type(BaseModel) = image_extractor.schema
+        self.__image_data_model_type: type(BaseModel) = image_extractor.schema
 
-        class ModelWithPath(self._image_data_model_type):
+        class ModelWithPath(self.__image_data_model_type):
             image_path: str
-        self._model_type_with_path = ModelWithPath
+            error: str
+        self.__model_type_with_meta = ModelWithPath
 
-        workbook_name = self._image_data_model_type.__name__
-        self.table: Workbook = excel_utils.initialize_table(workbook_name)
+        workbook_name = self.__image_data_model_type.__name__
+        self.table: Workbook = excel_utils.initialize_table(self.__model_type_with_meta, workbook_name)
         logger.info(f"table {workbook_name} initialized")
 
     def process_image_to_table(self, image_path: str) -> image_extraction.ImageData:
         image_data = self.image_extractor.extract_data_from_image(image_path)
         logging.info(f"extracted data from image {image_path}")
-        excel_utils.write_model_to_table(self._model_type_with_path.
+        excel_utils.write_model_to_table(self.__model_type_with_meta.
                                          model_construct(**image_data.data.model_dump(),
-                                                       image_path=image_path), self.table)
+                                                         image_path=image_path,
+                                                         error=("None" if image_data.error is None else str(image_data.error))),
+                                                         self.table)
         logging.info(f"tabled image {image_path}")
         return image_data
 
@@ -36,6 +41,8 @@ class ImageDataTabler:
         for image_path in image_paths:
             try:
                 self.process_image_to_table(image_path)
+            except AuthenticationError as e:
+                raise e
             except Exception as e:
                 logger.error(f"An error occurred processing image {image_path}, skipping: {e}")
                 continue

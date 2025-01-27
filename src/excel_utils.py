@@ -21,13 +21,13 @@ def initialize_table(model_type: type(BaseModel), table_name: str = "") -> Workb
 def write_model_to_table(model: BaseModel, ws: Workbook):
     row: list = []
     for value in model.model_dump().values():
-        row.append(value)
+        row.append(str(value if value is not None else ""))
     ws.active.append(row)
     for cell in ws.active[ws.active.max_row]:
         if isinstance(cell.value, str) and os.path.isfile(cell.value):
             cell.hyperlink = Hyperlink(ref=cell.value, target=cell.value)
             cell.font = Font(color="0000FF", underline="single")
-        if cell.value is None:
+        if cell.value is (None or ""):
             cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
     return ws
 
