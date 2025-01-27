@@ -18,7 +18,7 @@
     },
     "size": {
       "type": "string",
-      "description": "size of the person. In format 1.80m, or 5.8ft"
+      "description": "size of the person. In format 1.80m"
     },
     "birth_date": {
       "type": "string",
@@ -26,7 +26,7 @@
     },
     "issuing_country": {
       "type": "string",
-      "description": "country issuing the identity document"
+      "description": "country issuing the identity document. ISO 3166-1 alpha-3 code"
     },
     "issuing_date": {
       "type": "string",
