@@ -25,8 +25,7 @@ class ImageDataExtractor:
         self._openai: OpenAI = OpenAI(api_key=api_key)
         self.__schema: type(BaseModel) = schema
         self.retry_secs: int = 10
-        self.image_prompt: str = "extract all the matching data from the image."
-        self.schema_prompt: str = "fill in the schema with the extracted data the user will give you."
+        self.prompt: str = "extract all the matching data from the image. If unsure, leave blank."
 
         self.image_dimensions: list[int] = [1280, 720]
 
@@ -52,7 +51,7 @@ class ImageDataExtractor:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": self.image_prompt},
+                        {"type": "text", "text": self.prompt},
                         {
                             "type": "image_url",
                             "image_url": {

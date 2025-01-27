@@ -33,7 +33,10 @@ def prompt_credentials() -> str:
 
 
 def check_credentials() -> bool:
-    with open(credentials_file_path, "rt") as f:
+    if not os.path.exists(credentials_file_path):
+        Path(credentials_file_path).touch()
+        logger.info("credentials file created")
+    with open(credentials_file_path, "r") as f:
         if f.read() == "":
             logger.info("no credentials found")
             return False
@@ -44,7 +47,7 @@ def check_credentials() -> bool:
 def setup_credentials() -> str:
     logger.info(f"setting up credentials from {credentials_file_path}")
     if check_credentials():
-        with open(credentials_file_path, "rt") as f:
+        with open(credentials_file_path, "r") as f:
             return f.read()
     else:
         return prompt_credentials()
@@ -68,7 +71,8 @@ def nav_process_image_data_choose_schema() -> type(BaseModel):
 def nav_get_valid_directory(prompt: str, default: str = "") -> str:
     directory = user_input(prompt)
     if directory == "" and default != "":
-        return default
+        directory = default
+        os.makedirs(directory, exist_ok=True)
     if not os.path.isdir(directory):
         return nav_get_valid_directory("Invalid Path!\n" + prompt, default)
     else:
@@ -110,7 +114,7 @@ def nav_process_image_data() -> bool:
         logger.error(f"An unknown error occurred processing image data: {e}")
     finally:
         tabler.export(sanitize_str_path(output_dir + f"/output_{get_last_output_index(output_dir, 'output')+1}.xlsx"))
-        return success
+    return success
 
 
 def nav_help():

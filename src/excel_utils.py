@@ -6,10 +6,13 @@ from openpyxl.worksheet.hyperlink import Hyperlink
 from pydantic import BaseModel
 
 
-def initialize_table(model_type: type(BaseModel)) -> Workbook:
+def initialize_table(model_type: type(BaseModel), table_name: str = "") -> Workbook:
     wb = Workbook()
     ws = wb.active
-    ws.title = model_type.__name__
+    if table_name == "":
+        ws.title = model_type.__name__
+    else:
+        ws.title = table_name
     title_row = [field for field in model_type.__fields__.keys()]
     ws.append(title_row)
     return wb

@@ -1,3 +1,4 @@
+import os
 from openpyxl.workbook import Workbook
 from pydantic import BaseModel
 import image_extraction
@@ -16,7 +17,9 @@ class ImageDataTabler:
             image_path: str
         self._model_type_with_path = ModelWithPath
 
-        self.table: Workbook = excel_utils.initialize_table(ModelWithPath)
+        workbook_name = self._image_data_model_type.__name__
+        self.table: Workbook = excel_utils.initialize_table(workbook_name)
+        logger.info(f"table {workbook_name} initialized")
 
     def process_image_to_table(self, image_path: str) -> image_extraction.ImageData:
         image_data = self.image_extractor.extract_data_from_image(image_path)
@@ -39,4 +42,6 @@ class ImageDataTabler:
         logger.info(f"finished processing images in folder {folder_path}")
 
     def export(self, file_path: str):
+        logger.info("exporting table to file")
+        os.makedirs(os.path.dirname(file_path), exist_ok=True)
         excel_utils.save_table_to_file(self.table, file_path)
