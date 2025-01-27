@@ -77,17 +77,17 @@ class ImageDataExtractor:
             except RateLimitError as e:
                 logger.info(f"got rate limited, retrying in {self.retry_secs} seconds")
                 time.sleep(self.retry_secs)
-            except AuthenticationError as e:
-                logger.error(f"authentication error: {e}")
-                raise e
             except Exception as e:
-                if self.sneaky_write_errors:
+                if isinstance(e, AuthenticationError):
+                    logger.error(f"authentication/api-key error: {e}")
+                    raise
+                elif self.sneaky_write_errors:
                     logger.error(f"An error occurred processing image, sneaky writing error {image_path}: {e}")
                     return ImageData(image_path=image_path, schema=self.__schema, data=self.__schema.construct(),
                                      error=e)
                 else:
                     logger.error(f"An error occurred processing image, bubbling error {image_path}: {e}")
-                    raise e
+                    raise
 
     def batch_extract_data_from_images(self, image_paths: list[str]) -> list[ImageData]:
         if len(image_paths) == 0:

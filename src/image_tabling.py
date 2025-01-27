@@ -1,5 +1,5 @@
 import os
-from multiprocessing.context import AuthenticationError
+from openai import AuthenticationError
 
 from openpyxl.workbook import Workbook
 from pydantic import BaseModel
@@ -41,11 +41,12 @@ class ImageDataTabler:
         for image_path in image_paths:
             try:
                 self.process_image_to_table(image_path)
-            except AuthenticationError as e:
-                raise e
             except Exception as e:
-                logger.error(f"An error occurred processing image {image_path}, skipping: {e}")
-                continue
+                if isinstance(e, AuthenticationError):
+                    raise
+                else:
+                    logger.error(f"An error occurred processing image {image_path}, skipping: {e}")
+                    continue
         logger.info(f"finished processing images in folder {folder_path}")
 
     def export(self, file_path: str):

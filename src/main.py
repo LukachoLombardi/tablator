@@ -14,7 +14,7 @@ logger_format: str = '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 logging.basicConfig(filename=sanitize_str_path(f"{get_running_path(sys.argv[0])}/../latest.log"),
                     level=logging.INFO,
                     format=logger_format,
-                    filemode='w')
+                    filemode='a')
 console_handler = logging.StreamHandler(sys.stdout)
 console_handler.setLevel(logging.INFO)
 console_handler.setFormatter(logging.Formatter(logger_format))
@@ -117,17 +117,14 @@ def nav_process_image_data() -> bool:
     return success
 
 
-def nav_help():
-    os.startfile(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../README.md"))
-
-
 def nav_main():
     prompt: str = """
 Welcome. Please select an option:
 1 - Process image data
 2 - Set api key
 3 - Help
-4 - Exit
+4 - show logs
+0 - Exit
 
 Input: """
     choice = user_input(prompt, 3)
@@ -140,9 +137,11 @@ Input: """
         global openai_key
         openai_key = prompt_credentials()
     elif choice == "3":
-        logger.info("navigating to help")
-        nav_help()
+        os.startfile(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../README.md"))
     elif choice == "4":
+        logger.info("navigating to show logs")
+        os.startfile(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../latest.log"))
+    elif choice == "0":
         logger.info("exiting on user request")
         exit()
     nav_main()
@@ -150,6 +149,9 @@ Input: """
 
 def main():
     try:
+        # Add 4 newlines to the log file
+        with open(sanitize_str_path(f"{get_running_path(sys.argv[0])}/../latest.log"), 'a') as log_file:
+            log_file.write('\n' * 4)
         print_welcome_message()
         global openai_key
         openai_key = setup_credentials()
