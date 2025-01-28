@@ -42,6 +42,15 @@ class ImageDataExtractor:
     def schema(self) -> type(BaseModel):
         return self.__schema
 
+    def _build_desc_prompt_from_model(self) -> str:
+        prompt: str = "Here are descriptions for some data fields that you must adhere to:\n"
+        for field_name, field_info in self.__schema.__fields__.items():
+            if field_info.description is not None:
+                description = field_info.description
+                if description:
+                    prompt += f"- {str(field_name)}: {description}\n"
+        return prompt
+
     def _request_completion(self, image_path: str) -> BaseModel:
         if not image_path.lower().endswith(tuple(self.__compatible_image_formats)):
             raise ValueError(f"image {image_path} type is not in {self.__compatible_image_formats}")
@@ -53,7 +62,7 @@ class ImageDataExtractor:
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": self.prompt},
+                        {"type": "text", "text": f"{self.prompt}\n{self._build_desc_prompt_from_model()}"},
                         {
                             "type": "image_url",
                             "image_url": {
