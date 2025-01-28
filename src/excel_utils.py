@@ -31,7 +31,7 @@ def write_model_to_table(model: BaseModel, ws: Workbook):
     else:
         row.append(ws.active.max_row + 1)
     for key, value in model.model_dump().items():
-        if value is not (None and ""):
+        if value is not None and value != "":
             row.append(str(value))
         elif "opt" in key:
             row.append("$EMPTY$")
