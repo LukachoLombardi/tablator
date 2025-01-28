@@ -16,7 +16,7 @@ logging.basicConfig(filename=sanitize_str_path(f"{get_running_path(sys.argv[0])}
                     format=logger_format,
                     filemode='a')
 console_handler = logging.StreamHandler(sys.stdout)
-console_handler.setLevel(logging.INFO)
+console_handler.setLevel(logging.DEBUG)
 console_handler.setFormatter(logging.Formatter(logger_format))
 logging.root.addHandler(console_handler)
 

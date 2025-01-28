@@ -7,17 +7,17 @@
     "first-name": {
       "type": "string",
       "title": "First Name",
-      "description": "First name of the person. Without special characters such as é, ä, -, / etc."
+      "description": "First name of the person, regular capitalization (e.g. Dr. Michael). Please do not use any language specific characters such such as ä,ö,etc"
     },
-    "middle-names": {
+    "middle-names-opt": {
       "type": "string",
       "title": "Middle Name(s)",
-      "description": "Potential middle name(s) of the person. Please do not use any special characters such as é, ä, -, / etc."
+      "description": "Potential middle name(s) of the person. regular capitalization (e.g. Jebbediah). Please do not use any language specific characters such as ä,ö,etc."
     },
     "surname": {
       "type": "string",
       "title": "Surname(s)",
-      "description": "Last name(s) of the person. Please do not use any special characters such as é, ä, -, / etc."
+      "description": "Last name(s) of the person. regular capitalization (e.g. Smith). Please do not use any language specific characters such as ä,ö,etc."
     },
     "gender": {
       "type": "string",
@@ -37,7 +37,7 @@
     "passport-number": {
       "type": "string",
       "title": "Passport Number",
-      "description": "Passport number of the person. This is the human readable version, and should not be longer than ~15 characters."
+      "description": "Passport number from the top part of the passport. Should not be longer than 10 characters."
     },
     "remark-opt": {
         "type": "null",
