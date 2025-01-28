@@ -30,7 +30,7 @@ class ImageDataExtractor:
         self.retry_attempts: int = 3
         self.sneaky_write_errors: bool = True
         self.__compatible_image_formats: list[str] = [".jpg", ".jpeg", ".png", ".webp", ".tiff", ".tif", ".bmp", ".gif"]
-        self.prompt: str = "extract all the matching data from the image. If unsure, leave blank."
+        self.prompt: str = "extract all the matching data from the image. If unsure, write 'null'."
 
         self.image_dimensions: list[int] = [1280, 720]
 
@@ -56,13 +56,15 @@ class ImageDataExtractor:
             raise ValueError(f"image {image_path} type is not in {self.__compatible_image_formats}")
         image_base64 = self._image_to_openai_compatible(image_path)
         logger.info(f"extracting data from image {image_path}")
+        combined_prompt = f"{self.prompt}\n{self._build_desc_prompt_from_model()}"
+        logger.info(combined_prompt)
         response = self._openai.beta.chat.completions.parse(
-            model="gpt-4o-mini",
+            model="gpt-4o",
             messages=[
                 {
                     "role": "user",
                     "content": [
-                        {"type": "text", "text": f"{self.prompt}\n{self._build_desc_prompt_from_model()}"},
+                        {"type": "text", "text": combined_prompt},
                         {
                             "type": "image_url",
                             "image_url": {
@@ -76,11 +78,16 @@ class ImageDataExtractor:
             response_format=self.__schema
         )
         logger.info("got response")
+        logger.debug(response)
         return response.choices[0].message.parsed
 
     def extract_data_from_image(self, image_path: str) -> ImageData:
         for _ in range(self.retry_attempts):
             try:
+                completion = self._request_completion(image_path)
+                for key, value in completion.model_dump().items():
+                    if value == "null":
+                        setattr(completion, key, None)
                 return ImageData(image_path=image_path, schema=self.__schema, data=self._request_completion(image_path),
                                  error=None)
             except RateLimitError as e:
