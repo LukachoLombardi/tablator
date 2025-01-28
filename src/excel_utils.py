@@ -31,10 +31,10 @@ def write_model_to_table(model: BaseModel, ws: Workbook):
     else:
         row.append(ws.active.max_row + 1)
     for key, value in model.model_dump().items():
-        if value is not None:
+        if value is not (None and ""):
             row.append(str(value))
         elif "opt" in key:
-            row.append("opt")
+            row.append("$EMPTY$")
         else:
             row.append("")
     ws.active.append(row)
@@ -45,7 +45,7 @@ def write_model_to_table(model: BaseModel, ws: Workbook):
             cell.font = Font(color="0000FF", underline="single")
         if cell.value is (None or ""):
             cell.fill = PatternFill(start_color="FF0000", end_color="FF0000", fill_type="solid")
-        elif cell.value == "opt":
+        elif cell.value == ("$EMPTY$" or "null"):
             cell.value = ""
     return ws
 

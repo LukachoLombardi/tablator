@@ -37,7 +37,7 @@
     "passport-number": {
       "type": "string",
       "title": "Passport Number",
-      "description": "Passport number of the person, short version."
+      "description": "Passport number of the person. This is the human readable version, and should not be longer than ~15 characters."
     },
     "remark-opt": {
         "type": "null",

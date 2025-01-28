@@ -30,7 +30,7 @@ class ImageDataTabler:
         excel_utils.write_model_to_table(self.__model_type_with_meta.
                                          model_construct(**image_data.data.model_dump(),
                                                          image_path=image_path,
-                                                         error=("None" if image_data.error is None else str(image_data.error))),
+                                                         error_opt=image_data.error),
                                                          self.table)
         logging.info(f"tabled image {image_path}")
         return image_data
