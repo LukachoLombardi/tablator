@@ -96,7 +96,7 @@ This Software License Agreement ("Agreement") is a legal agreement between you (
 
 **Lukas Wößner**  
 lukacho.woessner@gmail.com
-Langemarckstraße 88a
+Langemarckstraße 88a, 79100 Freiburg, Deutschland
 
 ---
 
