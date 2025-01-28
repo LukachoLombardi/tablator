@@ -2,7 +2,7 @@ import os
 from openai import AuthenticationError
 
 from openpyxl.workbook import Workbook
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 import image_extraction
 import excel_utils
 import logging
@@ -16,8 +16,8 @@ class ImageDataTabler:
         self.__image_data_model_type: type(BaseModel) = image_extractor.schema
 
         class ModelWithPath(image_extractor.schema):
-            image_path: str
-            error: str
+            image_path: str = Field(None, title="Image Path")
+            error_opt: str = Field(None, alias="error", title="Error")
         self.__model_type_with_meta = ModelWithPath
 
         workbook_name = self.__image_data_model_type.__name__

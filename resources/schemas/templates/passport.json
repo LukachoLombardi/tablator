@@ -6,43 +6,48 @@
   "properties": {
     "first-name": {
       "type": "string",
-      "description": "First name of the person"
+      "title": "First Name",
+      "description": "First name of the person. Without special characters such as é, ä, -, / etc."
+    },
+    "middle-names": {
+      "type": "string",
+      "title": "Middle Name(s)",
+      "description": "Potential middle name(s) of the person. Please do not use any special characters such as é, ä, -, / etc."
     },
     "surname": {
       "type": "string",
-      "description": "Last name of the person"
+      "title": "Surname(s)",
+      "description": "Last name(s) of the person. Please do not use any special characters such as é, ä, -, / etc."
     },
-    "sex": {
+    "gender": {
       "type": "string",
-      "description": "sex of the person"
+      "title": "Gender",
+      "description": "sex of the person. Write 'Mr' or 'Mrs'."
     },
-    "size": {
+    "birth-date-adults-opt": {
       "type": "string",
-      "description": "size of the person. In format 1.80m"
+      "title": "Birth Date Adults",
+      "description": "Date of birth of the person, if they were born before 2007. In the format DD.MM.YYYY"
     },
-    "birth_date": {
+    "birth-date-non-adults-opt": {
       "type": "string",
-      "description": "Date of birth of the person. In the format YYYY-MM-DD"
+      "title": "Birth Date non-Adults",
+      "description": "Date of birth of the person, if they were born after 2007. In the format DD.MM.YYYY"
     },
-    "issuing_country": {
+    "passport-number": {
       "type": "string",
-      "description": "country issuing the identity document. ISO 3166-1 alpha-3 code"
+      "title": "Passport Number",
+      "description": "Passport number of the person, short version."
     },
-    "issuing_date": {
-      "type": "string",
-      "description": "Date of issue of the identity document. In the format YYYY-MM-DD"
+    "remark-opt": {
+        "type": "null",
+        "title": "Remark",
+        "mark-empty-fields": false
     },
-    "validity": {
-      "type": "string",
-      "description": "validity date of the document. In the format YYYY-MM-DD"
-    },
-    "nationality": {
-      "type": "string",
-      "description": "nationality of the person"
-    },
-    "passport_number": {
-      "type": "string",
-      "description": "Passport number of the person"
+    "remark-2-opt": {
+      "type": "null",
+      "title": "Remark 2",
+      "mark-empty-fields": false
     }
   },
   "required": []
