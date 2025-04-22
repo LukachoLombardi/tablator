@@ -1,3 +1,6 @@
+# Turn any set of images into standardized data
+Tablator uses GPT4 and pydantic to extract standardized datasets from arbitrarily big batches of images. Was originally made as paid work.
+
 # Troubleshooting
 If you're having problems with this application, first check the log file at latest.log.
 
